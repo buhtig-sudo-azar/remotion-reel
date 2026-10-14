@@ -6,35 +6,17 @@ import {
   useVideoConfig
 } from 'remotion';
 
-const scenes = [
-  {
-    title: 'Загрузка файлов:',
-    subtitle: 'почему проверки не спасают',
-    color: '#2563eb'
-  },
-  {
-    title: 'Чёрные списки',
-    subtitle: 'Разработчик блокирует .php, .exe, .sh — но забывает редкие форматы',
-    color: '#dc2626'
-  },
-  {
-    title: 'Подделываемые поля',
-    subtitle: 'Content-Type и имя файла — это данные клиента, им нельзя полностью доверять',
-    color: '#ea580c'
-  },
-  {
-    title: 'Разные проверки',
-    subtitle: 'Фронтенд, API и хранилище могут применять разные правила',
-    color: '#ca8a04'
-  },
-  {
-    title: 'Как защищаться',
-    subtitle: 'Белый список, проверка содержимого, изоляция хранилища, минимум прав',
-    color: '#16a34a'
-  }
-];
+export type Scene = {
+  title: string;
+  subtitle: string;
+  color: string;
+};
 
-export const Reel = () => {
+export type ReelProps = {
+  scenes: Scene[];
+};
+
+export const Reel: React.FC<ReelProps> = ({ scenes }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
