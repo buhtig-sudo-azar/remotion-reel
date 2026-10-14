@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AbsoluteFill,
   interpolate,
@@ -6,14 +7,12 @@ import {
   useVideoConfig
 } from 'remotion';
 
-export type Scene = {
-  title: string;
-  subtitle: string;
-  color: string;
-};
-
 export type ReelProps = {
-  scenes: Scene[];
+  scenes: {
+    title: string;
+    subtitle: string;
+    color: string;
+  }[];
 };
 
 export const Reel: React.FC<ReelProps> = ({ scenes }) => {

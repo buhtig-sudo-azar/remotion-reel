@@ -1,3 +1,4 @@
+import React from 'react';
 import { AbsoluteFill } from 'remotion';
 import type { ReelProps } from './Reel';
 
@@ -15,7 +16,14 @@ export const Cover: React.FC<ReelProps> = ({ scenes }) => {
         fontFamily: 'Arial, sans-serif'
       }}
     >
-      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 28 }}>
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 28
+        }}
+      >
         <div
           style={{
             width: 120,
