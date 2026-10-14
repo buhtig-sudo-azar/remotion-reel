@@ -1,25 +1,28 @@
 # Remotion Reel Generator
 
-Универсальный генератор вертикальных Reels на React и [Remotion](https://www.remotion.dev/). Проект превращает JSON-сценарий в готовое видео 1080×1920: ты меняешь тексты и цвета, а Remotion собирает анимированный MP4.
+Универсальный генератор вертикальных Reels и обложек на [Remotion](https://www.remotion.dev/). Проект превращает JSON-сценарий в готовое видео 1080×1920 и отдельную PNG-обложку.
 
-Вместо генерации видео нейросетью шаблон описывается кодом. Это особенно удобно для образовательных роликов, карточек, объяснений, анонсов и серий однотипных видео.
+Ты меняешь только тексты, цвета и количество сцен — шаблон, анимация и рендер остаются прежними. Это удобно для образовательных роликов, карточек, объяснений, анонсов и серий однотипных видео.
 
 ## Как это работает
 
 ```text
 content.json  →  тема, заголовки, пояснения, цвета
       ↓
-Reel.tsx      →  универсальный шаблон и анимация
+Reel.tsx      →  шаблон видео и анимация
       ↓
-Remotion      →  рендер видео
+Cover.tsx     →  шаблон обложки
       ↓
-out/*.mp4     →  готовый Reels
+Remotion      →  MP4 или PNG
+      ↓
+out/          →  готовые файлы
 ```
 
-- **Контент** хранится в JSON-файле.
-- **Дизайн и анимация** находятся в `src/Reel.tsx`.
-- **Параметры видео** — в `src/Root.tsx`.
-- Для нового ролика обычно достаточно создать новый JSON и выполнить одну команду.
+- **`content.json`** — контент конкретного ролика.
+- **`src/Reel.tsx`** — универсальный шаблон видео.
+- **`src/Cover.tsx`** — универсальный шаблон обложки.
+- **`src/Root.tsx`** — параметры композиций и Zod-схема.
+- **Remotion Studio** — интерфейс для предпросмотра и редактирования props.
 
 ## Структура проекта
 
@@ -33,19 +36,22 @@ remotion-reel/
 ├── content.json
 └── src/
     ├── index.ts       # Точка входа Remotion
-    ├── Root.tsx       # Параметры композиции и контент по умолчанию
-    └── Reel.tsx       # Универсальный шаблон видео
+    ├── Root.tsx       # Композиции Reel и Cover, Zod-схема
+    ├── Reel.tsx       # Шаблон видео
+    └── Cover.tsx      # Шаблон обложки
 ```
 
 ## Возможности
 
 - Вертикальный формат: 1080×1920, 30 fps.
+- Видео длительностью 25 секунд по умолчанию.
 - Любое количество сцен.
 - Заголовок, пояснение и цветовой акцент для каждой сцены.
 - Плавное появление текста через `spring()`.
-- Прогресс-бар внизу экрана.
+- Прогресс-бар внизу видео.
+- Отдельная обложка `Cover` в формате PNG.
 - Редактирование контента в Remotion Studio.
-- Рендер разных видео из одного шаблона через `--props`.
+- Генерация разных видео из одного шаблона через `--props`.
 - Запуск в GitHub Codespaces без локальной установки.
 
 ## Быстрый старт
@@ -62,7 +68,7 @@ npm install
 npm start
 ```
 
-Studio будет доступна по адресу:
+Studio откроется по адресу:
 
 ```text
 http://localhost:3000
@@ -76,15 +82,17 @@ http://localhost:3000
 npx remotion render src/index.ts Reel out/my-reel.mp4 --props=content.json
 ```
 
-Готовый файл появится здесь:
+### 4. Собери обложку
 
-```text
-out/my-reel.mp4
+```bash
+npx remotion still src/index.ts Cover out/cover.png --props=content.json
 ```
+
+Готовые файлы появятся в папке `out/`.
 
 ## Формат контента
 
-Создай JSON-файл, например `content.json`:
+Открой `content.json`:
 
 ```json
 {
@@ -116,7 +124,9 @@ out/my-reel.mp4
 | `subtitle` | Пояснение под заголовком | 1–2 коротких предложения |
 | `color` | Цвет акцентной полосы | HEX-код, например `#2563eb` |
 
-## Как изменить контент в интерфейсе
+Каждый объект в массиве `scenes` — один экран видео. Обложка использует первую сцену.
+
+## Как изменить контент в Studio
 
 1. Запусти Studio:
 
@@ -125,29 +135,18 @@ out/my-reel.mp4
    ```
 
 2. Открой порт `3000` через вкладку **Ports**.
-3. Выбери композицию **Reel**.
-4. Открой панель **Props** / **Input Props**.
-5. Отредактируй JSON:
-
-   ```json
-   {
-     "scenes": [
-       {
-         "title": "Новая тема",
-         "subtitle": "Текст первого экрана",
-         "color": "#2563eb"
-       }
-     ]
-   }
-   ```
-
-6. Нажми Play — изменения сразу появятся в предпросмотре.
+3. Слева выбери **Reel** или **Cover**.
+4. Справа открой вкладку **Props**.
+5. Раскрой `scenes`.
+6. Изменяй `title`, `subtitle` и `color`.
+7. Добавляй или удаляй сцены кнопками редактора массива.
+8. Нажми **Play** — изменения сразу появятся в предпросмотре.
 
 ## Как создать видео на новую тему
 
-### Вариант 1: через JSON-файл
+### Вариант 1: новый JSON-файл
 
-Создай файл, например `ai-productivity.json`:
+Создай, например, `ai-productivity.json`:
 
 ```json
 {
@@ -177,9 +176,13 @@ out/my-reel.mp4
 npx remotion render src/index.ts Reel out/ai-productivity.mp4 --props=ai-productivity.json
 ```
 
-### Вариант 2: через промпт для ИИ
+И обложку:
 
-Дай ИИ-агенту такой запрос:
+```bash
+npx remotion still src/index.ts Cover out/ai-cover.png --props=ai-productivity.json
+```
+
+### Вариант 2: промпт для ИИ-агента
 
 ```text
 Создай JSON для Remotion-видео на тему: [ТЕМА].
@@ -211,10 +214,11 @@ npx remotion render src/index.ts Reel out/ai-productivity.mp4 --props=ai-product
 «Как защитить аккаунт от фишинга».
 ```
 
-Сохрани ответ в `phishing.json` и собери видео:
+Сохрани ответ в `phishing.json` и собери:
 
 ```bash
 npx remotion render src/index.ts Reel out/phishing.mp4 --props=phishing.json
+npx remotion still src/index.ts Cover out/phishing-cover.png --props=phishing.json
 ```
 
 ## Настройка длительности
@@ -225,6 +229,7 @@ npx remotion render src/index.ts Reel out/phishing.mp4 --props=phishing.json
 <Composition
   id="Reel"
   component={Reel}
+  schema={reelSchema}
   durationInFrames={750}
   fps={30}
   width={1080}
@@ -248,6 +253,31 @@ npx remotion render src/index.ts Reel out/phishing.mp4 --props=phishing.json
 
 Все сцены автоматически получают равную часть общей длительности.
 
+## Команды
+
+```bash
+# Установить зависимости
+npm install
+
+# Запустить студию
+npm start
+
+# Собрать видео из content.json
+npx remotion render src/index.ts Reel out/my-reel.mp4 --props=content.json
+
+# Собрать обложку из content.json
+npx remotion still src/index.ts Cover out/cover.png --props=content.json
+
+# Собрать видео из другого сценария
+npx remotion render src/index.ts Reel out/other.mp4 --props=other.json
+
+# Посмотреть доступные композиции
+npx remotion compositions src/index.ts
+
+# Проверить версии Remotion
+npx remotion versions
+```
+
 ## Запуск в GitHub Codespaces
 
 1. Открой репозиторий на GitHub.
@@ -264,9 +294,10 @@ npm start
 
 ```bash
 npx remotion render src/index.ts Reel out/my-reel.mp4 --props=content.json
+npx remotion still src/index.ts Cover out/cover.png --props=content.json
 ```
 
-6. Скачай файл из папки `out` через проводник VS Code.
+6. Скачай файлы из папки `out` через проводник VS Code.
 
 ## Установка зависимостей Chromium в Codespaces
 
@@ -300,28 +331,6 @@ sudo apt-get install -y \
 ```
 
 Затем повтори рендер.
-
-## Полезные команды
-
-```bash
-# Установить зависимости
-npm install
-
-# Запустить студию
-npm start
-
-# Собрать видео из content.json
-npx remotion render src/index.ts Reel out/my-reel.mp4 --props=content.json
-
-# Собрать видео из другого сценария
-npx remotion render src/index.ts Reel out/other-reel.mp4 --props=other.json
-
-# Посмотреть доступные композиции
-npx remotion compositions src/index.ts
-
-# Проверить версии Remotion
-npx remotion versions
-```
 
 ## Правила пользования
 
