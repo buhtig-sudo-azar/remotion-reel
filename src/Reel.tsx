@@ -1,13 +1,17 @@
 import React from 'react';
 import {
   AbsoluteFill,
+  Audio,
   interpolate,
   spring,
+  staticFile,
   useCurrentFrame,
   useVideoConfig
 } from 'remotion';
 
 export type ReelProps = {
+  durationInSeconds: number;
+  transitionFrames: number;
   scenes: {
     title: string;
     subtitle: string;
@@ -15,24 +19,57 @@ export type ReelProps = {
   }[];
 };
 
-export const Reel: React.FC<ReelProps> = ({ scenes }) => {
+export const Reel: React.FC<ReelProps> = ({
+  durationInSeconds,
+  transitionFrames,
+  scenes
+}) => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  const sceneDuration = Math.ceil(durationInFrames / scenes.length);
+  const totalFrames = durationInSeconds * fps;
+  const sceneDuration = totalFrames / scenes.length;
+
   const index = Math.min(
     scenes.length - 1,
     Math.floor(frame / sceneDuration)
   );
+
   const localFrame = frame - index * sceneDuration;
 
   const enter = spring({
     frame: localFrame,
     fps,
-    config: { damping: 18, stiffness: 120 }
+    config: {
+      damping: 18,
+      stiffness: 120
+    }
   });
 
-  const progress = frame / durationInFrames;
+  const fade = transitionFrames > 0 ? transitionFrames : 1;
+
+  const opacity = interpolate(
+    localFrame,
+    [0, fade, sceneDuration - fade, sceneDuration],
+    [0, 1, 1, 0],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp'
+    }
+  );
+
+  const scale = interpolate(
+    localFrame,
+    [0, sceneDuration],
+    [1.04, 1],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp'
+    }
+  );
+
+  const progress = frame / totalFrames;
+  const scene = scenes[index];
 
   return (
     <AbsoluteFill
@@ -45,38 +82,57 @@ export const Reel: React.FC<ReelProps> = ({ scenes }) => {
         fontFamily: 'Arial, sans-serif'
       }}
     >
+      <Audio
+        src={staticFile('music.mp3')}
+        volume={0.12}
+      />
+
       <div
         style={{
           width: '100%',
-          transform: `scale(${0.94 + enter * 0.06})`,
-          opacity: interpolate(localFrame, [0, 12], [0, 1]),
+          opacity,
+          transform: `scale(${scale * (0.94 + enter * 0.06)})`,
           display: 'flex',
           flexDirection: 'column',
-          gap: 28
+          gap: 30
         }}
       >
         <div
           style={{
-            width: 96,
-            height: 8,
-            borderRadius: 8,
-            background: scenes[index].color
+            width: 110,
+            height: 10,
+            borderRadius: 10,
+            background: scene.color
           }}
         />
 
-        <h1 style={{ fontSize: 82, lineHeight: 1.1, margin: 0 }}>
-          {scenes[index].title}
+        <h1
+          style={{
+            fontSize: 88,
+            lineHeight: 1.08,
+            margin: 0,
+            fontWeight: 900
+          }}
+        >
+          {scene.title}
         </h1>
 
-        <p style={{ fontSize: 46, lineHeight: 1.35, margin: 0, opacity: 0.85 }}>
-          {scenes[index].subtitle}
+        <p
+          style={{
+            fontSize: 48,
+            lineHeight: 1.3,
+            margin: 0,
+            opacity: 0.85
+          }}
+        >
+          {scene.subtitle}
         </p>
       </div>
 
       <div
         style={{
           position: 'absolute',
-          bottom: 70,
+          bottom: 80,
           left: 80,
           right: 80,
           height: 10,

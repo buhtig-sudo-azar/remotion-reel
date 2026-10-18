@@ -6,9 +6,13 @@
     "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2020"]
   },
-  "include": [
-    "src"
-, "content.ts"  ]
+  "include": ["src", "remotion.config.ts"],
+  "exclude": ["node_modules"]
 }
