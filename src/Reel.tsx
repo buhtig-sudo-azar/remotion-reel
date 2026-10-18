@@ -8,26 +8,18 @@ import {
   useCurrentFrame,
   useVideoConfig
 } from 'remotion';
-
-export type ReelProps = {
-  durationInSeconds: number;
-  transitionFrames: number;
-  scenes: {
-    title: string;
-    subtitle: string;
-    color: string;
-  }[];
-};
+import { type ReelProps } from './Root';
 
 export const Reel: React.FC<ReelProps> = ({
   durationInSeconds,
   transitionFrames,
+  audioFile,
   scenes
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const totalFrames = durationInSeconds * fps;
+  const totalFrames = Math.round(durationInSeconds * fps);
   const sceneDuration = totalFrames / scenes.length;
 
   const index = Math.min(
@@ -36,6 +28,7 @@ export const Reel: React.FC<ReelProps> = ({
   );
 
   const localFrame = frame - index * sceneDuration;
+  const scene = scenes[index];
 
   const enter = spring({
     frame: localFrame,
@@ -69,7 +62,6 @@ export const Reel: React.FC<ReelProps> = ({
   );
 
   const progress = frame / totalFrames;
-  const scene = scenes[index];
 
   return (
     <AbsoluteFill
@@ -82,10 +74,16 @@ export const Reel: React.FC<ReelProps> = ({
         fontFamily: 'Arial, sans-serif'
       }}
     >
-      <Audio
-        src={staticFile('music.mp3')}
-        volume={0.12}
-      />
+      {audioFile ? (
+        <Audio
+          key={audioFile}
+          src={staticFile(audioFile)}
+          volume={0.12}
+          placeholder=""
+          onPointerEnterCapture={() => undefined}
+          onPointerLeaveCapture={() => undefined}
+        />
+      ) : null}
 
       <div
         style={{

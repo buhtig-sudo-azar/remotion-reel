@@ -1,11 +1,17 @@
 import { Composition } from 'remotion';
 import { z } from 'zod';
-import { Reel, type ReelProps } from './Reel';
+import { Reel } from './Reel';
 import { Cover } from './Cover';
+import audioFiles from './audio-files.json';
+
+const fallbackAudio = audioFiles[0] ?? '';
 
 export const reelSchema = z.object({
   durationInSeconds: z.number().min(5).max(60),
   transitionFrames: z.number().min(0).max(60),
+  audioFile: audioFiles.length
+    ? z.enum(audioFiles as [string, ...string[]])
+    : z.string().min(1),
   scenes: z.array(
     z.object({
       title: z.string(),
@@ -15,9 +21,12 @@ export const reelSchema = z.object({
   )
 });
 
+export type ReelProps = z.infer<typeof reelSchema>;
+
 const defaultProps: ReelProps = {
   durationInSeconds: 15,
   transitionFrames: 12,
+  audioFile: fallbackAudio,
   scenes: [
     {
       title: 'Сделаем страницу-урок на чистом JS',
@@ -62,11 +71,13 @@ export const RemotionRoot = () => {
         id="Cover"
         component={Cover}
         schema={reelSchema}
-        durationInFrames={1}
         fps={30}
         width={1080}
         height={1920}
         defaultProps={defaultProps}
+        calculateMetadata={() => ({
+          durationInFrames: 1
+        })}
       />
     </>
   );
